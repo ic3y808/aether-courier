@@ -10,7 +10,7 @@ struct AccountsSidebarView: View {
     var body: some View {
         HStack(spacing: 0) {
             AccountRail()
-            Divider()
+            Divider().padding(.top, 52)   // stop the rule below the toolbar band, not up next to the traffic lights
             FolderList()
         }
         // The aurora stops below the toolbar (reachesTop:false); a near-black base
