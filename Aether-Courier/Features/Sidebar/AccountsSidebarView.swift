@@ -185,9 +185,14 @@ private struct FolderList: View {
             }
         }
         .listStyle(.sidebar)
-        // Disable implicit animations on the list so row changes (section switch,
-        // disclosure expand/collapse) never crossfade a row's text into the one
-        // below it — the "All Inboxes"/"INBOX" ghosting.
+        // Rebuild the list cleanly when the scope flips between "All Accounts" and a
+        // single account. The two branches have completely different row structures,
+        // and SwiftUI's List diffing mis-handles that swap — leaving a stale
+        // "All Inboxes" row behind (the duplicated/ghosted rows). A scope-keyed
+        // identity forces a fresh list instead of a bad diff.
+        .id(store.scope)
+        // Disable implicit animations so row changes never crossfade a row's text
+        // into the one below it.
         .transaction { $0.animation = nil }
         .scrollContentBackground(.hidden)   // show the felt behind the folder list
         .safeAreaInset(edge: .bottom) { addAccountBar }
