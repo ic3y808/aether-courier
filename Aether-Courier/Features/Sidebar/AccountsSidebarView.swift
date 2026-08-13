@@ -13,20 +13,13 @@ struct AccountsSidebarView: View {
             Divider()
             FolderList()
         }
+        // The aurora stops below the toolbar (reachesTop:false); a near-black base
+        // fills the whole sidebar behind it — including the toolbar band, which the
+        // aurora leaves bare. So the translucent window toolbar over the sidebar
+        // reads dark (matching the content/reading panes) WITHOUT any overlay that
+        // could clip the avatar or folder rows.
         .background { AuroraBackdrop(intensity: 0.55, reachesTop: false) }
-        // A solid near-black band over the sidebar's toolbar area, matched to the
-        // window toolbar shown over the content/reading panes so the whole window
-        // top reads as one bar. Drawn in FRONT (an overlay) so it's uniform across
-        // the rail + folder list — drawing it behind let the rail's own dark
-        // background bleed through and seam. Non-interactive so the sidebar toggle
-        // still works.
-        .overlay(alignment: .top) {
-            Color(red: 0.055, green: 0.05, blue: 0.08)
-                .frame(height: 52)
-                .frame(maxWidth: .infinity)
-                .ignoresSafeArea(edges: .top)
-                .allowsHitTesting(false)
-        }
+        .background { Color(red: 0.045, green: 0.04, blue: 0.065).ignoresSafeArea() }
     }
 }
 
