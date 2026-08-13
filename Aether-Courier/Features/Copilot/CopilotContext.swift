@@ -146,7 +146,7 @@ extension CourierStore {
         if from.contains("voice-noreply@google.com") || from.contains("voice.google.com")
             || from.contains("googlevoice") || from.contains("voicemail") { return true }
         let hay = (m.subject + " " + m.snippet).lowercased()
-        if hay.contains("voicemail") || hay.contains("voice message") || hay.contains("new voice") { return true }
+        if hay.contains("voicemail") || hay.contains("voice message") { return true }
         return voicemailAudioAttachment() != nil
     }
 
@@ -154,30 +154,42 @@ extension CourierStore {
     func voicemailAudioAttachment() -> MailAttachment? {
         openBody?.attachments.first { a in
             a.mimeType.lowercased().hasPrefix("audio/")
-                || ["mp3", "m4a", "amr", "wav", "aac", "ogg", "mp4"]
+                || ["mp3", "m4a", "amr", "wav", "aac", "ogg"]
                     .contains((a.filename as NSString).pathExtension.lowercased())
         }
     }
 
     /// Recording URL from the email body when there's no audio attachment —
     /// Google Voice's "PLAY MESSAGE" links to voice.google.com, or some providers
-    /// link a direct audio file.
+    /// link a direct audio file. Scans `<a href>text</a>` and prefers, in order:
+    /// a direct audio file, the anchor whose text says "play", then any
+    /// voice.google.com link — so it doesn't grab the header logo / "Your Account"
+    /// link (which is usually the first voice.google.com href in the message).
     func voicemailPlayURL() -> URL? {
         guard let html = openBody?.html,
-              let re = try? NSRegularExpression(pattern: #"href\s*=\s*["']([^"']+)["']"#, options: .caseInsensitive)
+              let re = try? NSRegularExpression(
+                pattern: #"<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>(.*?)</a>"#,
+                options: [.caseInsensitive, .dotMatchesLineSeparators])
         else { return nil }
         let ns = html as NSString
-        var found: URL?
-        re.enumerateMatches(in: html, range: NSRange(location: 0, length: ns.length)) { m, _, stop in
-            guard let m, let r = Range(m.range(at: 1), in: html) else { return }
-            let raw = String(html[r]).replacingOccurrences(of: "&amp;", with: "&")
-            let low = raw.lowercased()
-            if low.contains("voice.google.com") || low.hasSuffix(".mp3") || low.contains("/audio") {
-                found = URL(string: raw)
-                stop.pointee = true
+        var audio: String?   // best: a direct audio file
+        var play: String?    // good: anchor text mentions "play"
+        var voice: String?   // fallback: any voice.google.com link
+        re.enumerateMatches(in: html, range: NSRange(location: 0, length: ns.length)) { m, _, _ in
+            guard let m, let hr = Range(m.range(at: 1), in: html) else { return }
+            let href = String(html[hr]).replacingOccurrences(of: "&amp;", with: "&")
+            let low = href.lowercased()
+            guard low.hasPrefix("http") else { return }   // skip mailto:/#/relative
+            let text = Range(m.range(at: 2), in: html).map { String(html[$0]).lowercased() } ?? ""
+            if low.contains("/audio") || low.range(of: #"\.mp3(\?|$)"#, options: .regularExpression) != nil {
+                if audio == nil { audio = href }
+            } else if text.contains("play") {
+                if play == nil { play = href }
+            } else if low.contains("voice.google.com"), voice == nil {
+                voice = href
             }
         }
-        return found
+        return (audio ?? play ?? voice).flatMap(URL.init(string:))
     }
 
     /// Play the voicemail: prefer the audio attachment in-app; otherwise open the
