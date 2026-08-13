@@ -105,14 +105,7 @@ The whole networking layer is **dependency‑free** and unit‑tested against sc
 
 ## 🗺️ Roadmap
 
-- [ ] Notarised, signed `.dmg` release + auto‑update
-- [ ] Threaded conversation view
-- [ ] Rich compose (formatting, inline images, drag‑drop attachments)
-- [ ] Rules / smart mailboxes
-- [ ] Calendar & contacts panes
-- [ ] iOS companion
-
-Have an idea? [Open an issue](../../issues/new/choose) or 👍 an existing one.
+Signed & notarised `.dmg` releases have shipped — grab the latest from [**Releases**](../../releases/latest). What's next lives in the tracker: see the [**`roadmap` issues**](../../issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap) (threaded view, rich compose, rules / smart mailboxes, calendar & contacts, an iOS companion). Have an idea? [Open an issue](../../issues/new/choose) or 👍 an existing one.
 
 ## 🤝 Contributing
 

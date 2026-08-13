@@ -12,11 +12,11 @@ A lightweight go‑to‑market plan for a privacy‑first, local‑AI macOS emai
 4. **A dependency‑free mail engine** — `EmailKit` is a genuinely interesting standalone artifact for Swift developers (great for a separate blog post / Show HN).
 
 ## Launch checklist (do these first)
-- [ ] A **10–20s screen recording** (GIF/MP4) of the Copilot summarising unread and sorting folders. This is the single highest‑leverage asset.
-- [ ] 2–3 clean **screenshots** with demo data (not a real inbox) → drop into `docs/` and the README.
-- [ ] A **signed, notarised `.dmg`** on the GitHub Releases page (people won't build from source at launch). Until then, clear build‑from‑source steps.
-- [ ] Enable **GitHub Discussions** and add a few "good first issue" labels.
-- [ ] A tiny **landing page** (GitHub Pages) with the hero, the GIF, and a download button.
+- [ ] A **10–20s screen recording** (GIF/MP4) of the Copilot summarising unread and sorting folders. This is the single highest‑leverage asset — **the only item left; needs a capture of the running app.**
+- [x] 2–3 clean **screenshots** with demo data → in `docs/` (`screenshot.png`, `reading.png`, `copilot.png`) and the README.
+- [x] A **signed, notarised `.dmg`** on the GitHub Releases page — shipping since v0.1.2.
+- [x] Enable **GitHub Discussions** and the `good first issue` label (both on).
+- [x] A tiny **landing page** (GitHub Pages) with the hero and a download button — https://ic3y808.github.io/aether-courier/
 
 ## Where to post (in rough order of fit)
 | Channel | Angle | Notes |
