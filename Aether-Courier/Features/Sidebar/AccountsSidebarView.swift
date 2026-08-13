@@ -13,6 +13,17 @@ struct AccountsSidebarView: View {
             Divider()
             FolderList()
         }
+        // A dark band over the sidebar's toolbar area (where the traffic-light
+        // controls live), matching the window toolbar shown over the content and
+        // reading panes. Layered in FRONT of the aurora and pushed up into the
+        // title-bar region via `ignoresSafeArea(.top)` so the lights sit on a bar
+        // instead of floating on the aurora.
+        .background(alignment: .top) {
+            Color.black.opacity(0.92)
+                .frame(height: 52)
+                .overlay(alignment: .bottom) { Divider().blendMode(.overlay) }
+                .ignoresSafeArea(edges: .top)
+        }
         .background { AuroraBackdrop(intensity: 0.55) }
     }
 }
@@ -39,10 +50,7 @@ private struct AccountRail: View {
                     .matchedGeometryEffect(id: store.scope, in: railNamespace)
                 verticalLabel
             }
-            // Clear the window's traffic-light controls: the rail is only 66pt
-            // wide, so it sits directly under them — start its content below the
-            // title-bar/toolbar band instead of at the very top.
-            .padding(.top, 52)
+            .padding(.top, 12)   // sits just below the sidebar's dark top band
 
             Spacer(minLength: 12)
 
