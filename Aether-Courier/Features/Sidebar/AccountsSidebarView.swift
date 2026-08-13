@@ -13,18 +13,20 @@ struct AccountsSidebarView: View {
             Divider()
             FolderList()
         }
-        // A dark band over the sidebar's toolbar area (where the traffic-light
-        // controls live), matching the window toolbar shown over the content and
-        // reading panes. Layered in FRONT of the aurora and pushed up into the
-        // title-bar region via `ignoresSafeArea(.top)` so the lights sit on a bar
-        // instead of floating on the aurora.
-        .background(alignment: .top) {
-            Color.black.opacity(0.92)
+        .background { AuroraBackdrop(intensity: 0.55, reachesTop: false) }
+        // A solid near-black band over the sidebar's toolbar area, matched to the
+        // window toolbar shown over the content/reading panes so the whole window
+        // top reads as one bar. Drawn in FRONT (an overlay) so it's uniform across
+        // the rail + folder list — drawing it behind let the rail's own dark
+        // background bleed through and seam. Non-interactive so the sidebar toggle
+        // still works.
+        .overlay(alignment: .top) {
+            Color(red: 0.055, green: 0.05, blue: 0.08)
                 .frame(height: 52)
-                .overlay(alignment: .bottom) { Divider().blendMode(.overlay) }
+                .frame(maxWidth: .infinity)
                 .ignoresSafeArea(edges: .top)
+                .allowsHitTesting(false)
         }
-        .background { AuroraBackdrop(intensity: 0.55) }
     }
 }
 
