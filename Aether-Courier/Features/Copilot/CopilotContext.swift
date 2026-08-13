@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import EmailKit
 
 /// One context-aware Copilot action, derived locally (no LLM) from the open email.
@@ -44,6 +45,18 @@ extension CourierStore {
         func add(_ id: String, _ title: String, _ image: String, _ run: @escaping () -> Void) {
             guard ids.insert(id).inserted else { return }
             out.append(CopilotSuggestion(id: id, title: title, systemImage: image, run: run))
+        }
+
+        // Voicemail (Google Voice etc.): offer to play the audio and read the
+        // transcript — highest priority so they lead the list.
+        if isVoicemailEmail(m) {
+            let playing = isPlayingVoicemail
+            add("vm-play", playing ? "Stop playback" : "Play voicemail",
+                playing ? "stop.circle" : "play.circle") { [weak self] in
+                guard let self else { return }
+                if self.isPlayingVoicemail { self.stopVoicemail() } else { self.playVoicemail() }
+            }
+            add("vm-read", "Read the transcript", "text.bubble") { [weak self] in self?.readVoicemail() }
         }
 
         // Ordered by relevance; the always-on pair (summarize/reply) bracket the
@@ -122,6 +135,88 @@ extension CourierStore {
         }
         isCopilotVisible = true
         runCopilot("Draft a concise, friendly reply to the currently open email. Return only the reply text — do not send it.")
+    }
+
+    // MARK: - Voicemail (Google Voice etc.)
+
+    /// True when the open email is a voicemail notification — matched by known
+    /// senders, "voicemail"/"voice message" wording, or an audio attachment.
+    func isVoicemailEmail(_ m: MailMessage) -> Bool {
+        let from = (m.from.first?.address ?? "").lowercased()
+        if from.contains("voice-noreply@google.com") || from.contains("voice.google.com")
+            || from.contains("googlevoice") || from.contains("voicemail") { return true }
+        let hay = (m.subject + " " + m.snippet).lowercased()
+        if hay.contains("voicemail") || hay.contains("voice message") || hay.contains("new voice") { return true }
+        return voicemailAudioAttachment() != nil
+    }
+
+    /// The playable audio part of the open message, if any.
+    func voicemailAudioAttachment() -> MailAttachment? {
+        openBody?.attachments.first { a in
+            a.mimeType.lowercased().hasPrefix("audio/")
+                || ["mp3", "m4a", "amr", "wav", "aac", "ogg", "mp4"]
+                    .contains((a.filename as NSString).pathExtension.lowercased())
+        }
+    }
+
+    /// Recording URL from the email body when there's no audio attachment —
+    /// Google Voice's "PLAY MESSAGE" links to voice.google.com, or some providers
+    /// link a direct audio file.
+    func voicemailPlayURL() -> URL? {
+        guard let html = openBody?.html,
+              let re = try? NSRegularExpression(pattern: #"href\s*=\s*["']([^"']+)["']"#, options: .caseInsensitive)
+        else { return nil }
+        let ns = html as NSString
+        var found: URL?
+        re.enumerateMatches(in: html, range: NSRange(location: 0, length: ns.length)) { m, _, stop in
+            guard let m, let r = Range(m.range(at: 1), in: html) else { return }
+            let raw = String(html[r]).replacingOccurrences(of: "&amp;", with: "&")
+            let low = raw.lowercased()
+            if low.contains("voice.google.com") || low.hasSuffix(".mp3") || low.contains("/audio") {
+                found = URL(string: raw)
+                stop.pointee = true
+            }
+        }
+        return found
+    }
+
+    /// Play the voicemail: prefer the audio attachment in-app; otherwise open the
+    /// provider's recording link in the browser.
+    func playVoicemail() {
+        if let att = voicemailAudioAttachment(), let data = att.data, !data.isEmpty {
+            voicemailPlayer.onFinish = { [weak self] in self?.isPlayingVoicemail = false }
+            if voicemailPlayer.play(data) {
+                isPlayingVoicemail = true
+            } else {
+                banner = "Couldn't play this voicemail (unsupported audio format)."
+            }
+            return
+        }
+        if let url = voicemailPlayURL() {
+            NSWorkspace.shared.open(url)
+            isCopilotVisible = true
+            copilotTurns.append(CopilotTurn(role: .assistant,
+                text: "This voicemail is a web recording (no audio was attached) — I've opened it in your browser to play."))
+            return
+        }
+        isCopilotVisible = true
+        copilotTurns.append(CopilotTurn(role: .assistant,
+            text: "I couldn't find playable audio or a recording link on this email. You can still read the transcript."))
+    }
+
+    func stopVoicemail() {
+        voicemailPlayer.stop()
+        isPlayingVoicemail = false
+    }
+
+    /// Ask the Copilot to surface the transcript (the body already carries it).
+    func readVoicemail() {
+        guard selectedMessage != nil else {
+            copilotTurns.append(CopilotTurn(role: .assistant, text: "Open a voicemail email first — then I'll read out its transcript."))
+            return
+        }
+        isCopilotVisible = true
+        runCopilot("This is a voicemail notification email (e.g. Google Voice). Show the voicemail transcript verbatim, then one line: who called, any callback number, and what they want. If there's no transcript, say so.")
     }
 
     // MARK: - Auto show / hide

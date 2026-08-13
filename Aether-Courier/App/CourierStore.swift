@@ -147,6 +147,10 @@ final class CourierStore {
     // Copilot
     var copilotTurns: [CopilotTurn] = []
     var copilotBusy = false
+
+    /// Voicemail playback (Google Voice etc.) — see CopilotContext.
+    var isPlayingVoicemail = false
+    @ObservationIgnored let voicemailPlayer = VoicemailPlayer()
     /// The in-flight copilot/agent task, so the user can stop it mid-thought.
     @ObservationIgnored var copilotTask: Task<Void, Never>?
 
@@ -659,6 +663,7 @@ final class CourierStore {
     /// Reacts to a change in `selectedIDs`: load the body when exactly one is
     /// selected; clear it for 0 or multiple (bulk) selections.
     func loadBodyForSelection() {
+        if isPlayingVoicemail { stopVoicemail() }   // don't leave a voicemail playing after navigating away
         guard selectedIDs.count == 1, let id = selectedIDs.first,
               let message = displayedMessages.first(where: { $0.id == id }) else {
             openBody = nil
