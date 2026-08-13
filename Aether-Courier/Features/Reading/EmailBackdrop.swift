@@ -8,11 +8,6 @@ import SwiftUI
 struct AuroraBackdrop: View {
     @Environment(\.colorScheme) private var scheme
     var intensity: Double = 1.0
-    /// When false, the backdrop stops at the top safe-area edge instead of
-    /// bleeding under the window toolbar — so the sidebar's toolbar band shows
-    /// the native toolbar material (matching the content/reading panes) rather
-    /// than the aurora.
-    var reachesTop: Bool = true
 
     var body: some View {
         GeometryReader { geo in
@@ -29,7 +24,7 @@ struct AuroraBackdrop: View {
             }
             .compositingGroup()
         }
-        .ignoresSafeArea(edges: reachesTop ? .all : [.horizontal, .bottom])
+        .ignoresSafeArea()
     }
 
     private var base: some View {

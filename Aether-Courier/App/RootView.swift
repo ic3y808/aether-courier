@@ -29,6 +29,7 @@ struct RootView: View {
         .tint(.aetherAccent)   // violet selection/accents app-wide
         .toolbar { toolbarContent }
         .toolbarBackground(.visible, for: .windowToolbar)
+        .toolbarColorScheme(.dark, for: .windowToolbar)   // dark toolbar chrome across ALL columns (incl. the sidebar band)
         .sheet(isPresented: $store.isAddingAccount) { AddAccountSheet() }
         .sheet(isPresented: $store.isComposing) { ComposeView() }
         .overlay(alignment: .bottom) { bannerView }

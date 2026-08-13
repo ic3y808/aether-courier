@@ -10,16 +10,14 @@ struct AccountsSidebarView: View {
     var body: some View {
         HStack(spacing: 0) {
             AccountRail()
-            Divider().padding(.top, 52)   // stop the rule below the toolbar band, not up next to the traffic lights
+            Divider()
             FolderList()
         }
-        // The aurora stops below the toolbar (reachesTop:false); a near-black base
-        // fills the whole sidebar behind it — including the toolbar band, which the
-        // aurora leaves bare. So the translucent window toolbar over the sidebar
-        // reads dark (matching the content/reading panes) WITHOUT any overlay that
-        // could clip the avatar or folder rows.
-        .background { AuroraBackdrop(intensity: 0.55, reachesTop: false) }
-        .background { Color(red: 0.045, green: 0.04, blue: 0.065).ignoresSafeArea() }
+        // The dark toolbar band comes from `.toolbarColorScheme(.dark)` in RootView,
+        // which renders the window toolbar dark across every column — so the sidebar
+        // top matches the content/reading panes natively, with no overlay to clip
+        // rows and no seam.
+        .background { AuroraBackdrop(intensity: 0.55) }
     }
 }
 
