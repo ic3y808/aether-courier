@@ -41,15 +41,17 @@ Most "AI email" apps ship your mail to someone else's servers. Aether Courier is
 
 ## 📸 Screenshots
 
-> _Add your own screenshots here (see [`docs/screenshots`](docs/)); the shots below show the aurora‑glass theme, the reading pane, and the AI Copilot._
+> The aurora‑glass theme, the reading pane, and the AI Copilot acting on real mailboxes.
 
-| Reading & theme | AI Copilot |
+<p align="center"><img src="docs/screenshot.png" alt="Aether Courier — the aurora-glass reading pane and AI Copilot" width="100%"></p>
+
+| Reading &amp; theme | AI Copilot |
 |---|---|
-| _`docs/reading.png`_ | _`docs/copilot.png`_ |
+| <img src="docs/reading.png" alt="Reading pane and aurora-glass theme" width="100%"> | <img src="docs/copilot.png" alt="The agentic AI Copilot" width="100%"> |
 
 ## 🚀 Install
 
-Aether Courier is currently **build‑from‑source** (a signed release build is on the roadmap). It targets **macOS 26 "Tahoe"**.
+Grab the latest **signed &amp; notarized `.dmg`** from the [**Releases page**](https://github.com/ic3y808/aether-courier/releases/latest) — it opens with no Gatekeeper warning. It targets **macOS 26 "Tahoe"**. Prefer to build it yourself? Follow the steps below.
 
 ### Prerequisites
 - **Xcode 26+** (full app, not just Command Line Tools)

@@ -1,0 +1,209 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16111f"/><stop offset="1" stop-color="#0a0710"/>
+    </linearGradient>
+    <radialGradient id="bloomV" cx="12%" cy="8%" r="55%">
+      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.55"/><stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bloomM" cx="95%" cy="4%" r="55%">
+      <stop offset="0" stop-color="#ec4899" stop-opacity="0.42"/><stop offset="1" stop-color="#ec4899" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bloomB" cx="70%" cy="115%" r="65%">
+      <stop offset="0" stop-color="#3b82f6" stop-opacity="0.42"/><stop offset="1" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9a6bff"/><stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="accentBtn" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a06cff"/><stop offset="1" stop-color="#f472b6"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2f0f8"/><stop offset="1" stop-color="#e7e4f0"/>
+    </linearGradient>
+    <linearGradient id="glassTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/><stop offset="0.5" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="40" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="blurBloom" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="60"/></filter>
+    <clipPath id="win"><rect x="80" y="70" width="1440" height="760" rx="20"/></clipPath>
+  </defs>
+
+  <!-- backdrop -->
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#bloomV)"/>
+  <rect width="1600" height="900" fill="url(#bloomM)"/>
+  <rect width="1600" height="900" fill="url(#bloomB)"/>
+  <circle cx="300" cy="120" r="120" fill="#8b5cf6" opacity="0.25" filter="url(#blurBloom)"/>
+  <circle cx="1350" cy="780" r="150" fill="#ec4899" opacity="0.18" filter="url(#blurBloom)"/>
+
+  <!-- window -->
+  <g filter="url(#softShadow)"><rect x="80" y="70" width="1440" height="760" rx="20" fill="#141020"/></g>
+  <g clip-path="url(#win)">
+    <rect x="80" y="70" width="1440" height="760" fill="#141020"/>
+    <rect x="80" y="70" width="1440" height="760" fill="url(#bloomV)" opacity="0.5"/>
+
+    <!-- ===== title bar ===== -->
+    <rect x="80" y="70" width="1440" height="56" fill="#181327" fill-opacity="0.85"/>
+    <circle cx="108" cy="98" r="7" fill="#ff5f57"/><circle cx="130" cy="98" r="7" fill="#febc2e"/><circle cx="152" cy="98" r="7" fill="#28c840"/>
+    <!-- search pill -->
+    <rect x="560" y="84" width="360" height="28" rx="14" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.12"/>
+    <circle cx="582" cy="98" r="5.5" fill="none" stroke="#9a93b8" stroke-width="1.6"/><line x1="586" y1="102" x2="590" y2="106" stroke="#9a93b8" stroke-width="1.6"/>
+    <text x="600" y="102" font-size="13" fill="#8a83a8">Search all mailboxes</text>
+    <!-- compose -->
+    <rect x="1392" y="82" width="104" height="32" rx="16" fill="url(#accentBtn)"/>
+    <text x="1444" y="103" font-size="13.5" font-weight="600" fill="#ffffff" text-anchor="middle">✎  Compose</text>
+
+    <!-- ===== column dividers ===== -->
+    <line x1="300" y1="126" x2="300" y2="830" stroke="#ffffff" stroke-opacity="0.06"/>
+    <line x1="690" y1="126" x2="690" y2="830" stroke="#ffffff" stroke-opacity="0.06"/>
+    <line x1="1230" y1="126" x2="1230" y2="830" stroke="#ffffff" stroke-opacity="0.06"/>
+
+    <!-- ===== SIDEBAR (80..300) ===== -->
+    <text x="104" y="158" font-size="11" font-weight="700" fill="#6f688c" letter-spacing="1.2">MAILBOXES</text>
+    <!-- All Inboxes selected -->
+    <rect x="96" y="170" width="188" height="34" rx="9" fill="url(#accent)" opacity="0.9"/>
+    <rect x="96" y="170" width="188" height="34" rx="9" fill="url(#glassTop)"/>
+    <text x="116" y="192" font-size="13.5" font-weight="600" fill="#ffffff">✉  All Inboxes</text>
+    <rect x="250" y="178" width="26" height="18" rx="9" fill="#ffffff" fill-opacity="0.25"/><text x="263" y="191" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">7</text>
+    <g font-size="13.5" fill="#c6bfe0">
+      <text x="116" y="230">★  Starred</text>
+      <text x="116" y="264">➤  Sent</text>
+      <text x="116" y="298">✎  Drafts</text>
+      <text x="116" y="332">🗄  Archive</text>
+    </g>
+    <text x="104" y="378" font-size="11" font-weight="700" fill="#6f688c" letter-spacing="1.2">ACCOUNTS</text>
+    <!-- account: Personal -->
+    <circle cx="112" cy="404" r="6" fill="#3b82f6"/><text x="128" y="409" font-size="13.5" font-weight="600" fill="#e5e0f2">Personal</text>
+    <g font-size="12.5" fill="#a49dc0">
+      <text x="140" y="437">Inbox</text><rect x="250" y="425" width="26" height="17" rx="8.5" fill="#ffffff" fill-opacity="0.10"/><text x="263" y="437.5" font-size="10.5" fill="#cfc8e6" text-anchor="middle">4</text>
+      <text x="140" y="467">Receipts</text>
+      <text x="140" y="497">Travel</text>
+    </g>
+    <!-- account: Work -->
+    <circle cx="112" cy="536" r="6" fill="#a06cff"/><text x="128" y="541" font-size="13.5" font-weight="600" fill="#e5e0f2">Work</text>
+    <g font-size="12.5" fill="#a49dc0">
+      <text x="140" y="569">Inbox</text><rect x="250" y="557" width="26" height="17" rx="8.5" fill="#ffffff" fill-opacity="0.10"/><text x="263" y="569.5" font-size="10.5" fill="#cfc8e6" text-anchor="middle">3</text>
+      <text x="140" y="599">Projects</text>
+      <text x="140" y="629">Spam</text>
+    </g>
+    <!-- local model chip -->
+    <rect x="96" y="770" width="188" height="30" rx="15" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.10"/>
+    <circle cx="116" cy="785" r="4" fill="#28c840"/><text x="128" y="789" font-size="11.5" fill="#a49dc0">llama3.1:8b · local</text>
+
+    <!-- ===== MESSAGE LIST (300..690) ===== -->
+    <text x="320" y="158" font-size="15" font-weight="700" fill="#efeafb">All Inboxes</text>
+    <rect x="600" y="145" width="72" height="22" rx="11" fill="url(#accent)" opacity="0.85"/><text x="636" y="160" font-size="11" font-weight="600" fill="#fff" text-anchor="middle">Unread</text>
+
+    <!-- row 1 selected -->
+    <rect x="312" y="178" width="366" height="86" rx="12" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.12"/>
+    <circle cx="330" cy="200" r="4" fill="#a06cff"/>
+    <text x="346" y="205" font-size="13.5" font-weight="700" fill="#ffffff">Orbit CI</text>
+    <text x="662" y="205" font-size="11" fill="#8a83a8" text-anchor="end">9:24 AM</text>
+    <text x="346" y="227" font-size="12.5" font-weight="600" fill="#e9e4f6">Your release build passed ✓</text>
+    <text x="346" y="248" font-size="11.5" fill="#9a93b8">v0.1.2 signed &amp; notarized — the .dmg is on your…</text>
+
+    <!-- row 2 -->
+    <circle cx="330" cy="292" r="4" fill="#a06cff"/>
+    <text x="346" y="297" font-size="13.5" font-weight="700" fill="#f2eefb">Ledger</text>
+    <text x="662" y="297" font-size="11" fill="#8a83a8" text-anchor="end">8:57 AM</text>
+    <text x="346" y="318" font-size="12.5" font-weight="500" fill="#d8d2ea">Your July statement is ready</text>
+    <text x="346" y="338" font-size="11.5" fill="#8a83a8">Receipt · $12.00 · view or download your invoice…</text>
+    <line x1="312" y1="360" x2="678" y2="360" stroke="#ffffff" stroke-opacity="0.05"/>
+
+    <!-- row 3 -->
+    <circle cx="330" cy="392" r="4" fill="#a06cff"/>
+    <text x="346" y="397" font-size="13.5" font-weight="700" fill="#f2eefb">Vela Design</text>
+    <text x="662" y="397" font-size="11" fill="#8a83a8" text-anchor="end">Yest</text>
+    <text x="346" y="418" font-size="12.5" font-weight="500" fill="#d8d2ea">Aisha shared “Q3 Brand Kit”</text>
+    <text x="346" y="438" font-size="11.5" fill="#8a83a8">You now have access to the shared library…</text>
+    <line x1="312" y1="460" x2="678" y2="460" stroke="#ffffff" stroke-opacity="0.05"/>
+
+    <!-- row 4 -->
+    <text x="346" y="497" font-size="13.5" font-weight="500" fill="#c6bfe0">Cadence</text>
+    <text x="662" y="497" font-size="11" fill="#8a83a8" text-anchor="end">Yest</text>
+    <text x="346" y="518" font-size="12.5" fill="#b3acce">Weekly digest — 3 threads need you</text>
+    <text x="346" y="538" font-size="11.5" fill="#8a83a8">A summary of what moved this week across…</text>
+    <line x1="312" y1="560" x2="678" y2="560" stroke="#ffffff" stroke-opacity="0.05"/>
+
+    <!-- row 5 -->
+    <text x="346" y="597" font-size="13.5" font-weight="500" fill="#c6bfe0">Northwind Travel</text>
+    <text x="662" y="597" font-size="11" fill="#8a83a8" text-anchor="end">Mon</text>
+    <text x="346" y="618" font-size="12.5" fill="#b3acce">Your itinerary for SFO → LHR</text>
+    <text x="346" y="638" font-size="11.5" fill="#8a83a8">Check-in opens 24h before departure…</text>
+
+    <!-- ===== READING PANE (690..1230) light paper ===== -->
+    <rect x="702" y="140" width="516" height="678" rx="14" fill="url(#paper)"/>
+    <rect x="702" y="140" width="516" height="678" rx="14" fill="none" stroke="#00000010"/>
+    <!-- header -->
+    <text x="726" y="182" font-size="19" font-weight="800" fill="#191722">Your release build passed ✓</text>
+    <circle cx="740" cy="214" r="14" fill="url(#accent)"/><text x="740" y="219" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">O</text>
+    <text x="764" y="210" font-size="13" font-weight="700" fill="#2a2833">Orbit CI</text>
+    <text x="764" y="227" font-size="11.5" fill="#6b6880">builds@orbit-ci.dev</text>
+    <text x="1194" y="180" font-size="11" fill="#8a8698" text-anchor="end">Today, 9:24 AM</text>
+    <!-- action row -->
+    <g>
+      <rect x="1050" y="200" width="34" height="26" rx="8" fill="#00000008" stroke="#00000012"/><text x="1067" y="217" font-size="12" fill="#5b5870" text-anchor="middle">↩</text>
+      <rect x="1090" y="200" width="34" height="26" rx="8" fill="#00000008" stroke="#00000012"/><text x="1107" y="217" font-size="12" fill="#5b5870" text-anchor="middle">🗄</text>
+      <rect x="1130" y="200" width="34" height="26" rx="8" fill="#00000008" stroke="#00000012"/><text x="1147" y="217" font-size="12" fill="#5b5870" text-anchor="middle">🗑</text>
+    </g>
+    <line x1="726" y1="248" x2="1194" y2="248" stroke="#0000000f"/>
+    <!-- body -->
+    <g font-size="13.5" fill="#3a3847">
+      <text x="726" y="288">Hi Jesse,</text>
+      <text x="726" y="318">Good news — your tagged release finished cleanly on the</text>
+      <text x="726" y="340">macOS 26 runner. The app was built, signed with your</text>
+      <text x="726" y="362">Developer ID, notarized by Apple, and stapled.</text>
+    </g>
+    <!-- callout card -->
+    <rect x="726" y="384" width="468" height="92" rx="12" fill="#ffffff" stroke="#00000010"/>
+    <rect x="726" y="384" width="4" height="92" rx="2" fill="url(#accent)"/>
+    <text x="748" y="414" font-size="13" font-weight="700" fill="#26242f">Aether-Courier-v0.1.2.dmg</text>
+    <text x="748" y="437" font-size="12" fill="#6b6880">Signed · Notarized · Stapled — opens with no Gatekeeper</text>
+    <text x="748" y="456" font-size="12" fill="#6b6880">warning. 3.9 MB.</text>
+    <rect x="1096" y="420" width="82" height="30" rx="15" fill="url(#accentBtn)"/><text x="1137" y="440" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">Download</text>
+    <g font-size="13.5" fill="#3a3847">
+      <text x="726" y="512">Every future tag ships another one automatically.</text>
+      <text x="726" y="542" fill="#6b6880">— The Orbit CI bot</text>
+    </g>
+
+    <!-- ===== COPILOT (1230..1520) ===== -->
+    <rect x="1230" y="126" width="290" height="704" fill="url(#bloomM)" opacity="0.35"/>
+    <circle cx="1262" cy="164" r="13" fill="url(#accent)"/><text x="1262" y="169" font-size="12" fill="#fff" text-anchor="middle">✦</text>
+    <text x="1284" y="169" font-size="14.5" font-weight="700" fill="#f3eefc">Copilot</text>
+    <rect x="1470" y="152" width="40" height="24" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.12"/><text x="1490" y="168" font-size="10.5" fill="#b8b1d4" text-anchor="middle">local</text>
+
+    <!-- user bubble -->
+    <rect x="1300" y="200" width="200" height="52" rx="14" fill="url(#accentBtn)"/>
+    <text x="1320" y="223" font-size="12.5" fill="#ffffff">Summarize my unread and</text>
+    <text x="1320" y="241" font-size="12.5" fill="#ffffff">file the receipts.</text>
+
+    <!-- assistant bubble -->
+    <rect x="1250" y="272" width="252" height="196" rx="14" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="1268" y="298" font-size="12.5" fill="#e7e2f4">You have 7 unread:</text>
+    <g font-size="12" fill="#c3bcdc">
+      <text x="1268" y="322">• Orbit CI — release v0.1.2</text>
+      <text x="1268" y="342">  passed ✓</text>
+      <text x="1268" y="364">• Ledger — July statement</text>
+      <text x="1268" y="386">• Vela — brand kit shared</text>
+    </g>
+    <line x1="1268" y1="404" x2="1484" y2="404" stroke="#ffffff" stroke-opacity="0.08"/>
+    <text x="1268" y="428" font-size="12" font-weight="600" fill="#9be7b0">✓ Moved 2 receipts →</text>
+    <text x="1268" y="448" font-size="12" font-weight="600" fill="#9be7b0">   Personal / Receipts</text>
+
+    <!-- suggestion chips -->
+    <rect x="1250" y="486" width="120" height="28" rx="14" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.12"/><text x="1310" y="504" font-size="11" fill="#c3bcdc" text-anchor="middle">Empty spam</text>
+    <rect x="1378" y="486" width="124" height="28" rx="14" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.12"/><text x="1440" y="504" font-size="11" fill="#c3bcdc" text-anchor="middle">Sort inboxes</text>
+
+    <!-- input -->
+    <rect x="1250" y="782" width="252" height="34" rx="17" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.14"/>
+    <text x="1270" y="803" font-size="12" fill="#8a83a8">Ask your mail anything…</text>
+    <circle cx="1486" cy="799" r="13" fill="url(#accentBtn)"/><text x="1486" y="804" font-size="12" fill="#fff" text-anchor="middle">↑</text>
+
+    <!-- top glass highlight over whole window -->
+    <rect x="80" y="70" width="1440" height="200" fill="url(#glassTop)" opacity="0.5"/>
+  </g>
+  <rect x="80.5" y="70.5" width="1439" height="759" rx="19.5" fill="none" stroke="#ffffff" stroke-opacity="0.14"/>
+</svg>
