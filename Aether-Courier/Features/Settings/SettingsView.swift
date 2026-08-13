@@ -64,6 +64,11 @@ struct SettingsView: View {
                 TextField("…or type a model id", text: $draft.aiModel)
                     .font(.caption)
             }
+            Section("Copilot") {
+                Toggle("Reveal the Copilot for relevant emails", isOn: $draft.autoRevealCopilot)
+                Text("Slides the Copilot in when an email looks like a receipt, newsletter, meeting or something suspicious — and out again when it's not. Toggling it yourself (⌘J) turns this off for the session.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Text("Mail servers are never contacted through the Aether backend — only AI requests are.")
                 .font(.caption).foregroundStyle(.secondary)
         }

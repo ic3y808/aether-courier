@@ -15,7 +15,9 @@ struct CopilotView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
-                        if store.copilotTurns.isEmpty { emptyGreeting }
+                        if store.copilotTurns.isEmpty {
+                            if store.selectedMessage != nil { contextSection } else { emptyGreeting }
+                        }
                         ForEach(store.copilotTurns) { turn in
                             CopilotBubble(turn: turn).id(turn.id)
                         }
@@ -45,7 +47,7 @@ struct CopilotView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            Button { store.isCopilotVisible = false } label: {
+            Button { store.userSetCopilotVisible(false) } label: {
                 Image(systemName: "sidebar.trailing")
             }
             .buttonStyle(.plain).foregroundStyle(.secondary)
@@ -103,6 +105,47 @@ struct CopilotView: View {
                     .glassCard(corner: 12)
                 }
                 .buttonStyle(.plain)
+            }
+        }
+    }
+
+    /// Content-aware panel: what the Copilot can do for the email that's open now.
+    /// Its chips (and the whole pane's visibility) react to the email's content.
+    @ViewBuilder private var contextSection: some View {
+        if let m = store.selectedMessage {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    GlowOrb(systemImage: "sparkles", size: 40)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("For this email").font(.caption2).foregroundStyle(.secondary).kerning(1.2)
+                        Text(m.subject.isEmpty ? "(no subject)" : m.subject)
+                            .font(.callout).fontWeight(.semibold).lineLimit(2)
+                        Text(m.from.first?.shortLabel ?? "unknown sender")
+                            .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(LinearGradient.aetherAccent.opacity(0.18), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.white.opacity(0.14)))
+
+                Text("SUGGESTED").font(.caption2).foregroundStyle(.secondary).kerning(1.5)
+                ForEach(store.contextualSuggestions) { s in
+                    Button { s.run() } label: {
+                        HStack(spacing: 11) {
+                            Image(systemName: s.systemImage)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(LinearGradient.aetherAccent)
+                                .frame(width: 20)
+                            Text(s.title)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(.vertical, 10).padding(.horizontal, 13)
+                        .glassCard(corner: 12)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }

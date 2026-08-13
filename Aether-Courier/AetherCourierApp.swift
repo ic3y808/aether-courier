@@ -30,7 +30,7 @@ struct AetherCourierApp: App {
             }
             CommandGroup(after: .sidebar) {
                 Button(store.isCopilotVisible ? "Hide Copilot" : "Show Copilot") {
-                    store.isCopilotVisible.toggle()
+                    store.userSetCopilotVisible(!store.isCopilotVisible)
                 }
                 .keyboardShortcut("j", modifiers: .command)
             }

@@ -59,7 +59,7 @@ struct RootView: View {
                 Label("Diagnostics", systemImage: "stethoscope")
             }
             // Copilot show/hide — standard right-inspector icon, in the group.
-            Button { withAnimation { store.isCopilotVisible.toggle() } } label: {
+            Button { withAnimation { store.userSetCopilotVisible(!store.isCopilotVisible) } } label: {
                 Label("Copilot", systemImage: "sidebar.trailing")
             }
             .help("Show/hide the Copilot (⌘J)")

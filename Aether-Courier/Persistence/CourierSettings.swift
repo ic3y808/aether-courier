@@ -33,6 +33,10 @@ struct CourierSettings: Codable, Equatable {
     /// macOS system sound played when new mail arrives ("None" = silent).
     var notificationSound: String = "Glass"
 
+    /// Auto-reveal the Copilot when the open email has an actionable signal
+    /// (receipt, newsletter, meeting, suspicious…), and retract it when there's none.
+    var autoRevealCopilot: Bool = true
+
     init() {}
 
     private enum CodingKeys: String, CodingKey {

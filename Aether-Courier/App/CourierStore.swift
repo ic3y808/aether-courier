@@ -131,6 +131,12 @@ final class CourierStore {
 
     // UI flags
     var isCopilotVisible = true
+    /// True once the user has manually shown/hidden the Copilot — after that we
+    /// stop auto-managing its visibility for the session (their choice wins).
+    @ObservationIgnored var copilotUserPinned = false
+    /// True while the Copilot is on screen *because we auto-revealed it* — only
+    /// such an auto-shown pane is auto-hidden again when context stops being relevant.
+    @ObservationIgnored var copilotAutoShown = false
     var isAddingAccount = false
     var isComposing = false
     var isSyncing = false
@@ -657,6 +663,7 @@ final class CourierStore {
               let message = displayedMessages.first(where: { $0.id == id }) else {
             openBody = nil
             isLoadingBody = false
+            syncCopilotVisibility()   // nothing open → retract an auto-shown Copilot
             return
         }
 
@@ -666,11 +673,13 @@ final class CourierStore {
             openBody = cached
             isLoadingBody = false
             markReadIfNeeded(message)
+            syncCopilotVisibility()   // body known → suggestions can use its content
             return
         }
 
         openBody = nil
         isLoadingBody = false
+        syncCopilotVisibility()   // reveal on envelope signals (subject/sender) before the body arrives
         deferBackgroundWork()   // yield the account's IMAP lock to this open
         bodyLoadGen &+= 1
         let gen = bodyLoadGen
@@ -689,6 +698,7 @@ final class CourierStore {
                 if gen == bodyLoadGen {
                     openBody = body
                     isLoadingBody = false
+                    syncCopilotVisibility()   // re-evaluate now that body text is available
                 }
                 markReadIfNeeded(message)
             } catch {
