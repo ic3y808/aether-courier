@@ -1,0 +1,139 @@
+name: release
+
+# Publishes a downloadable build to the GitHub Releases page whenever you push a
+# version tag (e.g. `git tag v0.1.0 && git push origin v0.1.0`). Also runnable
+# manually from the Actions tab.
+#
+# Signing & notarization are OPTIONAL and OFF until you add the repo secrets
+# listed below (Settings → Secrets and variables → Actions). Until then the job
+# still runs and ships an *unsigned* .dmg. Once the secrets exist it produces a
+# signed, notarized, stapled .dmg that opens with no Gatekeeper warning.
+#
+#   Required for signing + notarization (Developer ID):
+#     MACOS_CERTIFICATE       base64 of your "Developer ID Application" .p12
+#     MACOS_CERTIFICATE_PWD   password you set when exporting the .p12
+#     KEYCHAIN_PWD            any random string (temp keychain password)
+#     APPLE_TEAM_ID           your Apple Developer Team ID (10 chars)
+#   Required for notarization (App Store Connect API key):
+#     AC_API_KEY_ID           the key's Key ID
+#     AC_API_ISSUER_ID        the issuer UUID
+#     AC_API_KEY              base64 of the AuthKey_XXXX.p8 file
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to create the Release
+
+jobs:
+  release:
+    name: Build .dmg and publish Release
+    runs-on: macos-15
+    env:
+      # Signing/notarization run only when the Developer ID cert secret is set.
+      HAS_SIGNING: ${{ secrets.MACOS_CERTIFICATE != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Import Developer ID certificate
+        if: ${{ env.HAS_SIGNING == 'true' }}
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PWD }}
+        run: |
+          CERT="$RUNNER_TEMP/developer_id.p12"
+          KEYCHAIN="$RUNNER_TEMP/app-signing.keychain-db"
+          echo "$MACOS_CERTIFICATE" | base64 --decode > "$CERT"
+          security create-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN"
+          security import "$CERT" -P "$MACOS_CERTIFICATE_PWD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" "$KEYCHAIN"
+          security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
+
+      - name: Build (Release)
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcodegen generate
+          if [ "$HAS_SIGNING" = "true" ]; then
+            echo "Building signed (Developer ID, hardened runtime)"
+            xcodebuild \
+              -project Aether-Courier.xcodeproj \
+              -scheme Aether-Courier \
+              -configuration Release \
+              -destination 'generic/platform=macOS' \
+              -derivedDataPath build \
+              CODE_SIGN_STYLE=Manual \
+              CODE_SIGN_IDENTITY="Developer ID Application" \
+              DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+              ENABLE_HARDENED_RUNTIME=YES \
+              OTHER_CODE_SIGN_FLAGS="--timestamp" \
+              build
+          else
+            echo "No signing secrets set — building unsigned"
+            xcodebuild \
+              -project Aether-Courier.xcodeproj \
+              -scheme Aether-Courier \
+              -configuration Release \
+              -destination 'generic/platform=macOS' \
+              -derivedDataPath build \
+              CODE_SIGNING_ALLOWED=NO \
+              build
+          fi
+
+      - name: Package .dmg
+        run: |
+          APP="build/Build/Products/Release/Aether-Courier.app"
+          test -d "$APP" || { echo "app not found"; exit 1; }
+          mkdir -p dist/stage
+          cp -R "$APP" dist/stage/
+          ln -s /Applications dist/stage/Applications
+          DMG="dist/Aether-Courier-${GITHUB_REF_NAME}.dmg"
+          hdiutil create -volname "Aether Courier" -srcfolder dist/stage -ov -format UDZO "$DMG"
+          echo "DMG=$DMG" >> "$GITHUB_ENV"
+
+      - name: Sign the .dmg
+        if: ${{ env.HAS_SIGNING == 'true' }}
+        run: |
+          codesign --force --timestamp --sign "Developer ID Application" "$DMG"
+          codesign --verify --verbose "$DMG"
+
+      - name: Notarize & staple
+        if: ${{ env.HAS_SIGNING == 'true' }}
+        env:
+          AC_API_KEY_ID: ${{ secrets.AC_API_KEY_ID }}
+          AC_API_ISSUER_ID: ${{ secrets.AC_API_ISSUER_ID }}
+          AC_API_KEY: ${{ secrets.AC_API_KEY }}
+        run: |
+          KEY="$RUNNER_TEMP/AuthKey.p8"
+          echo "$AC_API_KEY" | base64 --decode > "$KEY"
+          xcrun notarytool submit "$DMG" \
+            --key "$KEY" \
+            --key-id "$AC_API_KEY_ID" \
+            --issuer "$AC_API_ISSUER_ID" \
+            --wait
+          xcrun stapler staple "$DMG"
+          xcrun stapler validate "$DMG"
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Aether-Courier-*.dmg
+          generate_release_notes: true
+          body: |
+            ### Aether Courier ${{ github.ref_name }}
+
+            Requires **macOS 26 "Tahoe"**.
+
+            > Signed & notarized builds open directly. If you downloaded an
+            > **unsigned** build (no signing secrets configured), right‑click the
+            > app → **Open** on first launch, or run
+            > `xattr -dr com.apple.quarantine /Applications/Aether-Courier.app`.
+
+            To build from source instead, see the [README](../../#-install).
