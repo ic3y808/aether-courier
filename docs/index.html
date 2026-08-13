@@ -70,6 +70,17 @@
         background:repeating-linear-gradient(135deg,rgba(255,255,255,.03),rgba(255,255,255,.03) 12px,transparent 12px,transparent 24px);
         border:1px dashed var(--line);font-size:14px;text-align:center;padding:20px}
 
+  /* gallery */
+  .gallery{display:grid;grid-template-columns:0.95fr 1.05fr;gap:18px;max-width:1040px;margin:30px auto 0;align-items:start}
+  .gallery .stack{display:flex;flex-direction:column;gap:18px}
+  .card{margin:0;border-radius:16px;border:1px solid var(--line);background:var(--card);
+        backdrop-filter:blur(12px);padding:12px;overflow:hidden;transition:transform .2s ease,border-color .2s ease}
+  .card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.22)}
+  .card img{width:100%;border-radius:10px;display:block}
+  .card figcaption{font-size:14px;line-height:1.5;color:var(--muted);padding:12px 6px 4px}
+  .card figcaption b{color:var(--ink)}
+  @media(max-width:760px){.gallery{grid-template-columns:1fr}}
+
   /* sections */
   section{padding:56px 0}
   h2{font-size:clamp(26px,4vw,38px);letter-spacing:-1px;margin:0 0 10px;text-align:center;font-weight:800}
@@ -146,6 +157,27 @@
       <div class="feature"><div class="ico">🧰</div><h3>Self‑contained engine</h3><p><b>EmailKit</b> — a zero‑dependency Swift package doing IMAP, SMTP, MIME and OAuth2 (PKCE + XOAUTH2) directly on Network.framework.</p></div>
       <div class="feature"><div class="ico">💾</div><h3>Download once, open instantly</h3><p>Bodies are cached to disk and re‑opened with zero network — works offline, survives restarts. A background warmer fills the cache but always yields to you.</p></div>
       <div class="feature"><div class="ico">🎨</div><h3>A theme you'll enjoy</h3><p>A soft "aurora glass" look — frosted panels, gradient accents, glowing orbs — tuned for macOS 26 Liquid Glass, light and dark.</p></div>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <h2>See it in action</h2>
+    <p class="sub">Every email gets context‑aware actions, and the Copilot does the work — all on your Mac.</p>
+    <div class="gallery">
+      <figure class="card">
+        <img src="copilot-context.png" alt="The Copilot showing context actions for a voicemail — play, read the transcript, move to a folder — with the transcript and a caller summary" loading="lazy">
+        <figcaption><b>Context‑aware Copilot.</b> Open a voicemail and it offers to <b>play it</b> or <b>read the transcript</b> — and tunes its suggestions to whatever email you're on.</figcaption>
+      </figure>
+      <div class="stack">
+        <figure class="card">
+          <img src="reading.png" alt="The aurora‑glass reading pane showing an email on a light sheet next to the message list" loading="lazy">
+          <figcaption><b>A reading pane you'll enjoy.</b> Email on a clean light sheet, floating over the aurora‑glass theme — light and dark.</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="copilot.png" alt="The agentic Copilot summarising unread mail and filing receipts into folders" loading="lazy">
+          <figcaption><b>An agent, not a chatbot.</b> “Summarise my unread and file the receipts” — it actually does it, across every mailbox.</figcaption>
+        </figure>
+      </div>
     </div>
   </section>
 
