@@ -1,0 +1,107 @@
+# XcodeGen spec for the Aether-Courier macOS email app.
+#
+# Declaratively generates Aether-Courier.xcodeproj so the project file is not
+# hand-maintained. Install XcodeGen (`brew install xcodegen`), run
+# `xcodegen generate` here (or use ./build.sh), and open the result in Xcode.
+#
+# Requires full Xcode (not just Command Line Tools) to build the .app bundle.
+# The mail engine lives in the local EmailKit Swift package; the Aether backend
+# is used ONLY by CourierAIClient for AI copilot tasks.
+
+name: Aether-Courier
+options:
+  bundleIdPrefix: com.aether
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+
+packages:
+  EmailKit:
+    path: EmailKit
+
+targets:
+  Aether-Courier:
+    type: application
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Aether-Courier
+        excludes:
+          - "Info.plist"
+          - "Aether-Courier.entitlements"
+    dependencies:
+      - package: EmailKit
+    info:
+      path: Aether-Courier/Info.plist
+      properties:
+        CFBundleDisplayName: Aether Courier
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
+        NSHumanReadableCopyright: Aether AI Hub
+        # Touch ID gate for unlocking stored mail credentials.
+        NSFaceIDUsageDescription: Aether Courier uses Touch ID to unlock your stored mail account credentials.
+        # Calendar access (macOS aggregates iCloud/Google/Exchange calendars via EventKit).
+        NSCalendarsUsageDescription: Aether Courier reads your calendars to check availability and schedule from email.
+        NSCalendarsFullAccessUsageDescription: Aether Courier reads and edits your calendars to schedule events from your mail.
+        # Local Proton Mail Bridge + LAN Aether hub reachability.
+        NSLocalNetworkUsageDescription: Aether Courier connects to your Aether hub and a local Proton Mail Bridge.
+        # The Aether hub is currently plain-HTTP on a homelab IP; mirror Terra's
+        # ATS posture until the HTTPS proxy is restored.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+        # Custom scheme used as the OAuth loopback/redirect target.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.aether.courier.oauth
+            CFBundleURLSchemes:
+              - com.aether.courier
+    entitlements:
+      path: Aether-Courier/Aether-Courier.entitlements
+      properties:
+        # Direct distribution (not App Store): sandbox OFF for unrestricted
+        # network + local Bridge + filesystem, matching Aether-Terra. Hardened
+        # Runtime stays ON (build setting) for notarization.
+        com.apple.security.app-sandbox: false
+        com.apple.security.personal-information.calendars: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aether.courier
+        # No space: keeps TEST_HOST resolvable. The pretty name shown in Finder
+        # comes from CFBundleDisplayName ("Aether Courier").
+        PRODUCT_NAME: Aether-Courier
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_VERSION: "6.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        COMBINE_HIDPI_IMAGES: YES
+        # Fill in your Developer ID team for signing / notarization:
+        # DEVELOPMENT_TEAM: XXXXXXXXXX
+
+  Aether-CourierTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Aether-CourierTests
+    dependencies:
+      - target: Aether-Courier
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.aether.courier.tests
+        SWIFT_VERSION: "6.0"
+
+schemes:
+  Aether-Courier:
+    build:
+      targets:
+        Aether-Courier: all
+        Aether-CourierTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - Aether-CourierTests

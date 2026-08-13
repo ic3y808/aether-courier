@@ -1,0 +1,44 @@
+name: 🐛 Bug report
+description: Something isn't working right
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug! Please fill out the details below.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+      placeholder: When I click X, Y happens; I expected Z.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add a Gmail account
+        2. Open a message
+        3. …
+    validations:
+      required: true
+  - type: dropdown
+    id: providers
+    attributes:
+      label: Which mail provider(s)?
+      multiple: true
+      options: [iCloud, Gmail, Outlook / Office 365, Proton (Bridge), Other]
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "26.0 (Tahoe)"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines (optional)
+      description: "From ~/Library/Logs/AetherCourier/courier.log — these contain no passwords. Please redact email addresses if you like."
+      render: text

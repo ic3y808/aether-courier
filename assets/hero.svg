@@ -1,0 +1,67 @@
+<svg width="1280" height="300" viewBox="0 0 1280 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Aether Courier — a private, AI-native email client for macOS">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#140e26"/>
+      <stop offset="1" stop-color="#08060f"/>
+    </linearGradient>
+    <radialGradient id="v" cx="10%" cy="0%" r="70%">
+      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="m" cx="100%" cy="10%" r="65%">
+      <stop offset="0" stop-color="#ec4899" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#ec4899" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="b" cx="70%" cy="140%" r="70%">
+      <stop offset="0" stop-color="#3b82f6" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8d5cf7"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0.2" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="300" fill="url(#bg)"/>
+  <rect width="1280" height="300" fill="url(#v)"/>
+  <rect width="1280" height="300" fill="url(#m)"/>
+  <rect width="1280" height="300" fill="url(#b)"/>
+
+  <!-- brand lockup: app-icon tile + wordmark -->
+  <g transform="translate(88,54)">
+    <rect x="0" y="0" width="92" height="92" rx="23" fill="url(#accent)"/>
+    <rect x="0" y="0" width="92" height="92" rx="23" fill="url(#sheen)"/>
+    <rect x="0.75" y="0.75" width="90.5" height="90.5" rx="22.5" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="1.5"/>
+    <g transform="translate(46,46)" fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M -25 -15 h 50 a 6 6 0 0 1 6 6 v 18 a 6 6 0 0 1 -6 6 h -50 a 6 6 0 0 1 -6 -6 v -18 a 6 6 0 0 1 6 -6 z"/>
+      <path d="M -29 -11 l 29 20 l 29 -20"/>
+    </g>
+  </g>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+    <text x="208" y="106" font-size="58" font-weight="800" fill="#ffffff" letter-spacing="-1.5">Aether Courier</text>
+    <text x="210" y="150" font-size="24" font-weight="500" fill="#cbc3ec">A private, AI-native email client for macOS.</text>
+
+    <!-- feature pills -->
+    <g font-size="18" font-weight="600" fill="#ece7fb">
+      <g transform="translate(210,186)">
+        <rect x="0" y="0" width="150" height="36" rx="18" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.16"/>
+        <text x="20" y="24">Local-first AI</text>
+      </g>
+      <g transform="translate(374,186)">
+        <rect x="0" y="0" width="174" height="36" rx="18" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.16"/>
+        <text x="20" y="24">IMAP IDLE push</text>
+      </g>
+      <g transform="translate(562,186)">
+        <rect x="0" y="0" width="156" height="36" rx="18" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.16"/>
+        <text x="20" y="24">Agentic Copilot</text>
+      </g>
+    </g>
+
+    <text x="210" y="262" font-size="16" font-weight="500" fill="#9d95bf">iCloud · Gmail · Outlook · Proton — no inbox leaves your Mac.</text>
+  </g>
+</svg>

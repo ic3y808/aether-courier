@@ -1,0 +1,28 @@
+# Xcode / generated project (source of truth is project.yml)
+*.xcodeproj/
+*.xcworkspace/
+Info.plist
+*.entitlements
+build/
+DerivedData/
+.build/
+*.xcuserstate
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# Local machine / dev
+.claude/settings.local.json
+*.vsix
+
+# App artifacts / user data (never commit)
+accounts.json
+secrets.json
+snapshots/
+*.log
+logs/
+
+# SwiftPM
+Package.resolved
+.swiftpm/
