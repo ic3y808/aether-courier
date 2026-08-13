@@ -408,6 +408,9 @@ private struct HTMLBodyView: NSViewRepresentable {
         // the (previously canvastext) default and would otherwise be dark-on-dark.
         let wrapped = """
         <!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Force every link to a new window: clicks route through the coordinator's
+             new-window / navigation handlers, which open the OS default browser. -->
+        <base target="_blank">
         <style>
           :root { color-scheme: light; }
           html, body { background: #e3e1ee; }
