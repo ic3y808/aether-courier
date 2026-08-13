@@ -39,7 +39,10 @@ private struct AccountRail: View {
                     .matchedGeometryEffect(id: store.scope, in: railNamespace)
                 verticalLabel
             }
-            .padding(.top, 14)
+            // Clear the window's traffic-light controls: the rail is only 66pt
+            // wide, so it sits directly under them — start its content below the
+            // title-bar/toolbar band instead of at the very top.
+            .padding(.top, 52)
 
             Spacer(minLength: 12)
 
