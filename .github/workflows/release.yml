@@ -29,7 +29,7 @@ permissions:
 jobs:
   release:
     name: Build .dmg and publish Release
-    runs-on: macos-15
+    runs-on: macos-26   # Xcode 26 / Swift 6.2 — EmailKit needs swift-tools-version 6.2
     env:
       # Signing/notarization run only when the Developer ID cert secret is set.
       HAS_SIGNING: ${{ secrets.MACOS_CERTIFICATE != '' }}
@@ -60,6 +60,7 @@ jobs:
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
+          xcodebuild -version; swift --version
           xcodegen generate
           if [ "$HAS_SIGNING" = "true" ]; then
             echo "Building signed (Developer ID, hardened runtime)"
