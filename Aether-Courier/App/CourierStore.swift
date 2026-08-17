@@ -157,6 +157,11 @@ final class CourierStore {
     var messageSummaries: [String: String] = [:]
     @ObservationIgnored private var summarizingIDs: Set<String> = []
     @ObservationIgnored private var summaryWorker: Task<Void, Never>?
+
+    /// Number of AI inferences running right now (background summaries + triage).
+    /// Drives the "AI working" indicator so GPU activity is always visible.
+    var backgroundAITasks = 0
+    var isAIWorking: Bool { backgroundAITasks > 0 || copilotBusy }
     /// The in-flight copilot/agent task, so the user can stop it mid-thought.
     @ObservationIgnored var copilotTask: Task<Void, Never>?
 
@@ -1757,9 +1762,11 @@ final class CourierStore {
         if Task.isCancelled { return }
 
         let sender = message.from.first?.shortLabel ?? "unknown"
+        backgroundAITasks += 1
         let reply = await aiComplete(
             system: "Summarize this email in ONE short, plain sentence (about 20 words). Say what it's about and any action the reader needs to take. No preamble, no quotes, no markdown, no lists.",
             user: "From: \(sender)\nSubject: \(message.subject)\n\nBody:\n\(bodyText.prefix(4000))")
+        backgroundAITasks = max(0, backgroundAITasks - 1)
         let summary = reply.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !summary.isEmpty, !summary.hasPrefix("⚠️") else { return }
         messageSummaries[id] = summary
@@ -1786,7 +1793,10 @@ final class CourierStore {
         }
         all.sort { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }   // newest first
         let pending: [MailMessage] = all.filter { messageSummaries[$0.id] == nil }
-        for m in pending {
+        // GENTLE: a small batch per sweep with a real gap between inferences, so the
+        // local GPU idles between them instead of being pegged. Large backlogs are
+        // summarised gradually over many sweeps rather than in one continuous burst.
+        for m in pending.prefix(20) {
             if Task.isCancelled { return }
             guard settings.autoSummarize else { return }
             while Date() < warmerPauseUntil {          // stand down while the user is active
@@ -1794,7 +1804,7 @@ final class CourierStore {
                 try? await Task.sleep(for: .seconds(2))
             }
             await summarizeMessage(m)
-            try? await Task.sleep(for: .milliseconds(150))   // breathe between summaries
+            try? await Task.sleep(for: .seconds(6))    // let the GPU breathe between summaries
         }
     }
 
@@ -1830,7 +1840,9 @@ final class CourierStore {
         Body:
         \(bodyText.prefix(2500))
         """
+        backgroundAITasks += 1
         let reply = await aiComplete(system: system, user: user)
+        backgroundAITasks = max(0, backgroundAITasks - 1)
         guard let obj = Self.firstJSONObject(in: reply), let action = obj["action"] as? String else { return }
 
         switch action {

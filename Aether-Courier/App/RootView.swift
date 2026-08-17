@@ -43,6 +43,20 @@ struct RootView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .principal) {
+            if store.isAIWorking {
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles").foregroundStyle(LinearGradient.aetherAccent)
+                    Text("AI working\(store.backgroundAITasks > 1 ? " (\(store.backgroundAITasks))" : "")…")
+                        .font(.caption).foregroundStyle(.secondary)
+                    ProgressView().controlSize(.small)
+                }
+                .padding(.horizontal, 9).padding(.vertical, 3)
+                .background(.ultraThinMaterial, in: Capsule())
+                .help("The AI is running on your GPU — background email summaries / triage. Turn these off in Settings → Copilot.")
+                .transition(.opacity)
+            }
+        }
         ToolbarItemGroup(placement: .primaryAction) {
             Button { store.beginCompose() } label: {
                 Label("New Message", systemImage: "square.and.pencil")
