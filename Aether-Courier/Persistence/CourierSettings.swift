@@ -41,12 +41,25 @@ struct CourierSettings: Codable, Equatable {
     /// agent's system prompt, so it changes behaviour for every task.
     var aiAutonomy: AIAutonomy = .balanced
 
+    /// Auto-summarize every email (a one-line AI summary in the "For this email"
+    /// panel), pre-computed in the background newest→oldest. Uses the local LLM.
+    var autoSummarize: Bool = true
+
+    /// Post a macOS notification banner when new mail arrives.
+    var showNotifications: Bool = true
+
+    /// Let the AI act agent-like on newly-arrived mail — file into folders, star
+    /// important, move obvious spam to Junk. Governed by `aiAutonomy` (Cautious
+    /// never auto-acts). Off by default since it moves mail on its own.
+    var autoProcessNewMail: Bool = false
+
     init() {}
 
     private enum CodingKeys: String, CodingKey {
         case backendHost, aiUseLocal, localAIHost, aiModel, googleClientID
         case microsoftClientID, microsoftTenant, fetchWindow, loadRemoteImages, blockedSenders
-        case notificationSound, autoRevealCopilot, aiAutonomy
+        case notificationSound, autoRevealCopilot, aiAutonomy, autoSummarize
+        case showNotifications, autoProcessNewMail
     }
 
     init(from decoder: Decoder) throws {
@@ -65,6 +78,9 @@ struct CourierSettings: Codable, Equatable {
         notificationSound = (try? c.decode(String.self, forKey: .notificationSound)) ?? d.notificationSound
         autoRevealCopilot = (try? c.decode(Bool.self, forKey: .autoRevealCopilot)) ?? d.autoRevealCopilot
         aiAutonomy       = (try? c.decode(AIAutonomy.self, forKey: .aiAutonomy)) ?? d.aiAutonomy
+        autoSummarize    = (try? c.decode(Bool.self, forKey: .autoSummarize)) ?? d.autoSummarize
+        showNotifications = (try? c.decode(Bool.self, forKey: .showNotifications)) ?? d.showNotifications
+        autoProcessNewMail = (try? c.decode(Bool.self, forKey: .autoProcessNewMail)) ?? d.autoProcessNewMail
     }
 
     /// The macOS system sounds available for new-mail alerts (plus "None").

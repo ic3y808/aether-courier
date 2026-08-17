@@ -35,8 +35,8 @@ targets:
       path: Aether-Courier/Info.plist
       properties:
         CFBundleDisplayName: Aether Courier
-        CFBundleShortVersionString: "0.1.7"
-        CFBundleVersion: "8"
+        CFBundleShortVersionString: "0.1.8"
+        CFBundleVersion: "9"
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
         NSHumanReadableCopyright: Aether AI Hub
         # Touch ID gate for unlocking stored mail credentials.
@@ -69,8 +69,8 @@ targets:
         # No space: keeps TEST_HOST resolvable. The pretty name shown in Finder
         # comes from CFBundleDisplayName ("Aether Courier").
         PRODUCT_NAME: Aether-Courier
-        MARKETING_VERSION: "0.1.7"
-        CURRENT_PROJECT_VERSION: "8"
+        MARKETING_VERSION: "0.1.8"
+        CURRENT_PROJECT_VERSION: "9"
         ENABLE_HARDENED_RUNTIME: YES
         SWIFT_VERSION: "6.0"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

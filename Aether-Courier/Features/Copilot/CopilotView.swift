@@ -131,6 +131,24 @@ struct CopilotView: View {
                 .background(LinearGradient.aetherAccent.opacity(0.18), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.white.opacity(0.14)))
 
+                if store.settings.autoSummarize {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "sparkles").font(.caption)
+                            .foregroundStyle(LinearGradient.aetherAccent).padding(.top, 2)
+                        if let summary = store.summary(for: m.id) {
+                            Text(summary).font(.callout)
+                                .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
+                        } else {
+                            HStack(spacing: 6) {
+                                ProgressView().controlSize(.small)
+                                Text("Summarizing…").font(.callout).foregroundStyle(.secondary)
+                            }
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 2).padding(.top, 2)
+                }
+
                 Text("SUGGESTED").font(.caption2).foregroundStyle(.secondary).kerning(1.5)
                 ForEach(store.contextualSuggestions) { s in
                     Button { s.run() } label: {

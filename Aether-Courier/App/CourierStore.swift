@@ -151,6 +151,12 @@ final class CourierStore {
     /// Voicemail playback (Google Voice etc.) — see CopilotContext.
     var isPlayingVoicemail = false
     @ObservationIgnored let voicemailPlayer = VoicemailPlayer()
+
+    /// One-line AI summaries keyed by message id (observed so panels update live as
+    /// the background worker fills them in). See `summarizeMessage` / `startSummaryWorker`.
+    var messageSummaries: [String: String] = [:]
+    @ObservationIgnored private var summarizingIDs: Set<String> = []
+    @ObservationIgnored private var summaryWorker: Task<Void, Never>?
     /// The in-flight copilot/agent task, so the user can stop it mid-thought.
     @ObservationIgnored var copilotTask: Task<Void, Never>?
 
@@ -211,6 +217,8 @@ final class CourierStore {
             await mailService.pruneBodyCache()   // bound disk usage
         }
         startCacheWarmer()
+        startSummaryWorker()
+        MailNotifier.requestAuthorization()   // ask once for macOS new-mail banners
         logInfo("Bootstrap complete. Log file: \(CourierLog.shared.fileURL.path)", category: "app")
     }
 
@@ -640,9 +648,34 @@ final class CourierStore {
         guard let account = accounts.first(where: { $0.id == accountID }) else { return }
         let before = Set(inboxMessages(for: accountID).map(\.id))
         await sync(account)
-        let arrived = inboxMessages(for: accountID).contains { !before.contains($0.id) }
-        if arrived { playNotificationSound() }
-        await prefetchBodies(for: account, limit: 15)   // warm the freshly-arrived mail
+        let newOnes = inboxMessages(for: accountID)
+            .filter { !before.contains($0.id) }
+            .sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }   // newest first
+        guard !newOnes.isEmpty else { return }
+
+        playNotificationSound()
+        if settings.showNotifications {
+            for m in newOnes.prefix(5) { notifyNewMail(m) }   // immediate: sender + subject
+        }
+        await prefetchBodies(for: account, limit: 15)         // warm the freshly-arrived mail
+
+        // Prioritise summaries for the new mail (ahead of the background backlog).
+        if settings.autoSummarize {
+            for m in newOnes.prefix(8) { await summarizeMessage(m) }
+        }
+        // Let the AI act on the new mail (file / star / spam), if enabled.
+        if settings.autoProcessNewMail {
+            for m in newOnes.prefix(10) { await autoTriageNewMessage(m) }
+        }
+    }
+
+    /// Post a macOS banner for a newly-arrived message (with the AI summary if it's
+    /// already cached).
+    private func notifyNewMail(_ m: MailMessage) {
+        let sender = m.from.first?.shortLabel ?? "New mail"
+        var body = m.subject.isEmpty ? "(no subject)" : m.subject
+        if let s = summary(for: m.id) { body += "\n" + s }
+        MailNotifier.post(title: sender, body: body, id: m.id)
     }
 
     /// Plays the user's chosen macOS system sound for a new-mail alert.
@@ -670,6 +703,12 @@ final class CourierStore {
             isLoadingBody = false
             syncCopilotVisibility()   // nothing open → retract an auto-shown Copilot
             return
+        }
+
+        // Prioritise a summary for the email the user just opened (ahead of the
+        // background backlog) so it appears in the "For this email" panel quickly.
+        if settings.autoSummarize, messageSummaries[id] == nil {
+            Task(priority: .userInitiated) { await summarizeMessage(message) }
         }
 
         // Instant path: already fetched this message → show it immediately with no
@@ -1691,6 +1730,139 @@ final class CourierStore {
     private func aiComplete(system: String, user: String) async -> String {
         do { return try await ai.complete(system: system, messages: [.init(role: "user", content: user)]) }
         catch { return "⚠️ \(error.localizedDescription)" }
+    }
+
+    // MARK: - Auto email summaries
+
+    /// The cached one-line summary for a message, if it's been computed.
+    func summary(for id: String) -> String? { messageSummaries[id] }
+
+    /// Generate + cache a one-line summary for a message (idempotent, lightweight).
+    /// Uses the cached body when available, else fetches it. Goes through the AI
+    /// client (which paces + retries), so it's safe to call in bulk.
+    func summarizeMessage(_ message: MailMessage) async {
+        let id = message.id
+        guard messageSummaries[id] == nil, !summarizingIDs.contains(id),
+              let account = account(for: message) else { return }
+        summarizingIDs.insert(id)
+        defer { summarizingIDs.remove(id) }
+
+        let bodyText: String
+        if let cached = bodyCache[id] {
+            bodyText = cached.bestText
+        } else if let fetched = try? await mailService.fetchBody(account, folderPath: message.folderPath, uid: message.uid) {
+            cacheBody(id, fetched)
+            bodyText = fetched.bestText
+        } else { return }
+        if Task.isCancelled { return }
+
+        let sender = message.from.first?.shortLabel ?? "unknown"
+        let reply = await aiComplete(
+            system: "Summarize this email in ONE short, plain sentence (about 20 words). Say what it's about and any action the reader needs to take. No preamble, no quotes, no markdown, no lists.",
+            user: "From: \(sender)\nSubject: \(message.subject)\n\nBody:\n\(bodyText.prefix(4000))")
+        let summary = reply.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !summary.isEmpty, !summary.hasPrefix("⚠️") else { return }
+        messageSummaries[id] = summary
+    }
+
+    /// Background pass: summarize every known message, newest → oldest, skipping
+    /// ones already done. Yields to the user (`warmerPauseUntil`) and to the AI
+    /// client's own pacing; gated by `settings.autoSummarize`.
+    private func startSummaryWorker() {
+        guard summaryWorker == nil else { return }
+        summaryWorker = Task(priority: .background) { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { break }
+                if self.settings.autoSummarize { await self.summarizeBacklog() }
+                try? await Task.sleep(for: .seconds(45))   // re-sweep for newly-arrived mail
+            }
+        }
+    }
+
+    private func summarizeBacklog() async {
+        var all: [MailMessage] = []
+        for account in accounts where account.isEnabled {
+            all.append(contentsOf: messagesByAccount[account.id] ?? [])
+        }
+        all.sort { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }   // newest first
+        let pending: [MailMessage] = all.filter { messageSummaries[$0.id] == nil }
+        for m in pending {
+            if Task.isCancelled { return }
+            guard settings.autoSummarize else { return }
+            while Date() < warmerPauseUntil {          // stand down while the user is active
+                if Task.isCancelled { return }
+                try? await Task.sleep(for: .seconds(2))
+            }
+            await summarizeMessage(m)
+            try? await Task.sleep(for: .milliseconds(150))   // breathe between summaries
+        }
+    }
+
+    // MARK: - Agent-like auto-processing of new mail
+
+    /// Classify ONE incoming email with the LLM, then act: move obvious spam to
+    /// Junk, file into a matching folder, or star if important. Respects
+    /// `aiAutonomy` (Cautious never auto-acts). Leaves a note in the Copilot thread.
+    func autoTriageNewMessage(_ m: MailMessage) async {
+        guard settings.aiAutonomy != .cautious, let account = account(for: m) else { return }
+        let bodyText: String
+        if let cached = bodyCache[m.id] {
+            bodyText = cached.bestText
+        } else if let b = try? await mailService.fetchBody(account, folderPath: m.folderPath, uid: m.uid) {
+            cacheBody(m.id, b); bodyText = b.bestText
+        } else { return }
+        if Task.isCancelled { return }
+
+        let folders = moveDestinations(for: m).filter { $0.role == .other }
+        let names = folders.map(\.displayName)
+        let system = """
+        You triage ONE incoming email and reply with ONLY a compact JSON object, nothing else. \
+        Schema: {"action":"spam"|"file"|"star"|"none","folder":"<exact folder name, only when action=file>","why":"<max 8 words>"}. \
+        Rules: "spam" = obvious junk/phishing/scam. "file" = clearly belongs in one of the AVAILABLE folders. \
+        "star" = genuinely important (from a real person, time-sensitive, or needs a reply). Otherwise "none". \
+        Only use a folder from the provided list; never invent one.
+        """
+        let user = """
+        From: \(m.from.first?.shortLabel ?? "unknown") <\(m.from.first?.address ?? "")>
+        Subject: \(m.subject)
+        Available folders: [\(names.isEmpty ? "none" : names.joined(separator: ", "))]
+
+        Body:
+        \(bodyText.prefix(2500))
+        """
+        let reply = await aiComplete(system: system, user: user)
+        guard let obj = Self.firstJSONObject(in: reply), let action = obj["action"] as? String else { return }
+
+        switch action {
+        case "spam":
+            moveMessages([m], toRole: .junk)
+            autoNote("moved a message from \(m.from.first?.shortLabel ?? "someone") to Junk (looked like spam)")
+        case "star":
+            setFlagged(m, true)
+            autoNote("starred “\(m.subject)” as important")
+        case "file":
+            if let name = obj["folder"] as? String,
+               let folder = folders.first(where: { $0.displayName.caseInsensitiveCompare(name) == .orderedSame }) {
+                moveToFolder(m, path: folder.path)
+                autoNote("filed “\(m.subject)” into \(folder.displayName)")
+            }
+        default:
+            break
+        }
+    }
+
+    /// Records an automatic action in the Copilot thread (without forcing it open)
+    /// so there's a visible audit trail of what the AI did on its own.
+    private func autoNote(_ text: String) {
+        copilotTurns.append(CopilotTurn(role: .assistant, text: "🤖 Auto: \(text)."))
+    }
+
+    /// Extract the first `{ … }` JSON object from a possibly-chatty LLM reply.
+    static func firstJSONObject(in text: String) -> [String: Any]? {
+        guard let start = text.firstIndex(of: "{"), let end = text.lastIndex(of: "}"), start < end else { return nil }
+        guard let data = String(text[start...end]).data(using: .utf8),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        return obj
     }
 
     /// Full-mailbox triage: hand the agent a complete organize task. How much it

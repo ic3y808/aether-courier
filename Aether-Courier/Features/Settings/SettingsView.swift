@@ -80,6 +80,14 @@ struct SettingsView: View {
                 Toggle("Reveal the Copilot for relevant emails", isOn: $draft.autoRevealCopilot)
                 Text("Slides the Copilot in when an email looks like a receipt, newsletter, meeting or something suspicious — and out again when it's not. Toggling it yourself (⌘J) turns this off for the session.")
                     .font(.caption).foregroundStyle(.secondary)
+
+                Toggle("Auto‑summarize every email", isOn: $draft.autoSummarize)
+                Text("A one‑line AI summary in the “For this email” panel, pre‑computed in the background newest→oldest. Runs on your local model.")
+                    .font(.caption).foregroundStyle(.secondary)
+
+                Toggle("Let the AI act on new mail", isOn: $draft.autoProcessNewMail)
+                Text("As mail arrives, the AI files it into matching folders, stars what's important, and moves obvious spam to Junk — following the autonomy level above (Cautious never auto‑acts). It notes each action in the Copilot.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Text("Mail servers are never contacted through the Aether backend — only AI requests are.")
                 .font(.caption).foregroundStyle(.secondary)
@@ -117,6 +125,9 @@ struct SettingsView: View {
     private var syncTab: some View {
         Form {
             Section("Notifications") {
+                Toggle("Show macOS notifications for new mail", isOn: $draft.showNotifications)
+                Text("Posts a notification banner (sender, subject, and the AI summary when ready) as mail arrives. You'll be asked to allow notifications the first time.")
+                    .font(.caption).foregroundStyle(.secondary)
                 Picker("New-mail sound", selection: $draft.notificationSound) {
                     ForEach(CourierSettings.availableSounds, id: \.self) { name in
                         Text(name).tag(name)
