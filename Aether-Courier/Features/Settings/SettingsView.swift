@@ -65,6 +65,18 @@ struct SettingsView: View {
                     .font(.caption)
             }
             Section("Copilot") {
+                Picker("How much the AI does on its own", selection: $draft.aiAutonomy) {
+                    ForEach(AIAutonomy.allCases) { level in
+                        Text(level.title).tag(level)
+                    }
+                }
+                .pickerStyle(.segmented)
+                Text(draft.aiAutonomy.blurb)
+                    .font(.caption).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Try **Aggressive**, then ask the Copilot to “organize & triage everything” — it sorts mail into folders, archives low‑value updates, stars what's important, and clears spam.")
+                    .font(.caption2).foregroundStyle(.secondary)
+
                 Toggle("Reveal the Copilot for relevant emails", isOn: $draft.autoRevealCopilot)
                 Text("Slides the Copilot in when an email looks like a receipt, newsletter, meeting or something suspicious — and out again when it's not. Toggling it yourself (⌘J) turns this off for the session.")
                     .font(.caption).foregroundStyle(.secondary)

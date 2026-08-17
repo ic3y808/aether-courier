@@ -56,6 +56,7 @@ struct CopilotView: View {
             Spacer()
             Menu {
                 Button("Summarize Unread & Flag Important", systemImage: "tray.full") { store.summarizeUnread() }
+                Button("Organize & Triage Everything", systemImage: "wand.and.rays") { store.organizeEverything() }
                 Button("Summarize This Email", systemImage: "text.append") { store.summarizeOpenEmail() }
                 Button("Unsubscribe from This Email", systemImage: "xmark.octagon") { store.unsubscribeOpenEmail() }
                 Button("Security Check This Email", systemImage: "checkmark.shield") { store.securityCheckOpenEmail() }

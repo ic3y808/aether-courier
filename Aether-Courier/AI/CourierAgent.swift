@@ -57,6 +57,7 @@ extension CourierStore {
             }
             systemPrompt += openContext
         }
+        systemPrompt += "\n\n" + settings.aiAutonomy.directive   // user-set: cautious ↔ aggressive
         var messages: [[String: Any]] = [
             ["role": "system", "content": systemPrompt],
             ["role": "user", "content": userPrompt]

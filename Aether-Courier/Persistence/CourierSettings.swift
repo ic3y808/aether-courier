@@ -37,12 +37,16 @@ struct CourierSettings: Codable, Equatable {
     /// (receipt, newsletter, meeting, suspicious…), and retract it when there's none.
     var autoRevealCopilot: Bool = true
 
+    /// How much latitude the AI has to act on your mail without asking. Feeds the
+    /// agent's system prompt, so it changes behaviour for every task.
+    var aiAutonomy: AIAutonomy = .balanced
+
     init() {}
 
     private enum CodingKeys: String, CodingKey {
         case backendHost, aiUseLocal, localAIHost, aiModel, googleClientID
         case microsoftClientID, microsoftTenant, fetchWindow, loadRemoteImages, blockedSenders
-        case notificationSound
+        case notificationSound, autoRevealCopilot, aiAutonomy
     }
 
     init(from decoder: Decoder) throws {
@@ -59,6 +63,8 @@ struct CourierSettings: Codable, Equatable {
         loadRemoteImages = (try? c.decode(Bool.self, forKey: .loadRemoteImages)) ?? d.loadRemoteImages
         blockedSenders   = (try? c.decode([String].self, forKey: .blockedSenders)) ?? d.blockedSenders
         notificationSound = (try? c.decode(String.self, forKey: .notificationSound)) ?? d.notificationSound
+        autoRevealCopilot = (try? c.decode(Bool.self, forKey: .autoRevealCopilot)) ?? d.autoRevealCopilot
+        aiAutonomy       = (try? c.decode(AIAutonomy.self, forKey: .aiAutonomy)) ?? d.aiAutonomy
     }
 
     /// The macOS system sounds available for new-mail alerts (plus "None").
@@ -103,6 +109,43 @@ struct CourierSettings: Codable, Equatable {
     func save() {
         if let data = try? JSONEncoder().encode(self) {
             UserDefaults.standard.set(data, forKey: Self.key)
+        }
+    }
+}
+
+/// How much latitude the AI agent has to act on the user's mail. Higher = it does
+/// more on its own; lower = it suggests and asks first. The `directive` is injected
+/// verbatim into the agent's system prompt.
+enum AIAutonomy: String, Codable, CaseIterable, Identifiable {
+    case cautious, balanced, aggressive
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .cautious:   return "Cautious"
+        case .balanced:   return "Balanced"
+        case .aggressive: return "Aggressive"
+        }
+    }
+
+    /// One-line description shown under the picker.
+    var blurb: String {
+        switch self {
+        case .cautious:   return "Suggests and asks first. Won't move, archive, or delete in bulk without confirming."
+        case .balanced:   return "Does what you ask — sorts into matching folders and stars important mail; asks before bulk deletes."
+        case .aggressive: return "Takes charge. When you organize, it triages everything — files, archives, stars important, clears spam — then reports back."
+        }
+    }
+
+    /// Injected into the agent system prompt to steer how freely it acts.
+    var directive: String {
+        switch self {
+        case .cautious:
+            return "AUTONOMY = CAUTIOUS. Strongly prefer suggesting over acting. Do NOT archive, move, delete, star, or bulk-modify messages unless the user explicitly asked for that exact action. When in doubt, describe what you would do and ask first."
+        case .balanced:
+            return "AUTONOMY = BALANCED. Do the actions the user asks for. You may sort mail into clearly-matching existing folders and star genuinely important messages. Ask before permanently deleting or archiving large numbers of messages."
+        case .aggressive:
+            return "AUTONOMY = AGGRESSIVE. Be proactive and decisive. When asked to organize or triage, process the whole mailbox: move obvious spam/junk to Junk (without blocking senders), sort mail into matching folders, archive low-value already-read notifications and newsletters, and star anything genuinely important (from a real person, time-sensitive, or needs a reply). Leave only what you are genuinely unsure about. Do NOT permanently delete (empty trash/spam) unless explicitly asked. Finish with a concise summary grouped by what you did, with counts."
         }
     }
 }

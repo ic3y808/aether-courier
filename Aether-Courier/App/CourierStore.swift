@@ -1693,6 +1693,22 @@ final class CourierStore {
         catch { return "⚠️ \(error.localizedDescription)" }
     }
 
+    /// Full-mailbox triage: hand the agent a complete organize task. How much it
+    /// actually does is governed by `settings.aiAutonomy` (injected into the agent
+    /// prompt) — Cautious mostly proposes, Aggressive does it all.
+    func organizeEverything() {
+        isCopilotVisible = true
+        runAgent("""
+        Organize and triage ALL of my inboxes end to end. Work through each account in this order:
+        1. Move obvious spam/junk to the Junk folder (do not block senders).
+        2. Sort mail from a company or service into an EXISTING folder whose name matches it.
+        3. Archive low-value, already-read notifications, newsletters and automated updates.
+        4. Star anything genuinely important — from a real person, time-sensitive, or that needs a reply.
+        5. Leave anything you're unsure about untouched. Do NOT permanently delete anything.
+        When done, give a short summary grouped by what you did (sorted / archived / starred / spam) with counts.
+        """)
+    }
+
     /// Summarize the currently-open email.
     func summarizeOpenEmail() {
         guard selectedMessage != nil else {
@@ -1753,6 +1769,7 @@ final class CourierStore {
     func runQuickAction(_ action: CopilotQuickAction) {
         switch action {
         case .summarizeUnread: summarizeUnread()
+        case .organizeAll: organizeEverything()
         case .summarizeEmail: summarizeOpenEmail()
         case .unsubscribeEmail: unsubscribeOpenEmail()
         case .securityCheck: securityCheckOpenEmail()
@@ -1770,11 +1787,12 @@ final class CourierStore {
 }
 
 enum CopilotQuickAction: CaseIterable {
-    case summarizeUnread, summarizeEmail, unsubscribeEmail, securityCheck, reportSpam, deleteFromSender, sortFolders, emptyTrash, emptySpam, compose, availability, help
+    case summarizeUnread, organizeAll, summarizeEmail, unsubscribeEmail, securityCheck, reportSpam, deleteFromSender, sortFolders, emptyTrash, emptySpam, compose, availability, help
 
     var title: String {
         switch self {
         case .summarizeUnread: return "Summarize unread & flag important"
+        case .organizeAll: return "Organize & triage everything"
         case .summarizeEmail: return "Summarize this email"
         case .unsubscribeEmail: return "Unsubscribe from this email"
         case .securityCheck: return "Security check this email"
@@ -1791,6 +1809,7 @@ enum CopilotQuickAction: CaseIterable {
     var systemImage: String {
         switch self {
         case .summarizeUnread: return "tray.full"
+        case .organizeAll: return "wand.and.rays"
         case .summarizeEmail: return "text.append"
         case .unsubscribeEmail: return "xmark.octagon"
         case .securityCheck: return "checkmark.shield"
