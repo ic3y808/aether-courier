@@ -144,7 +144,8 @@ extension CourierStore {
                                  "content": "You didn't emit a valid action. If there's more to do, reply with ONE {\"tool\":...} action. If you're done, reply with {\"final\":\"<short summary>\"}. Do not reply with \"...\"."])
                 continue
             }
-            if !cleaned.isEmpty { copilotTurns.append(CopilotTurn(role: .assistant, text: cleaned)) }
+            let final = AICleanup.sanitize(cleaned)   // strip reasoning/meta the hub used to
+            if !final.isEmpty { copilotTurns.append(CopilotTurn(role: .assistant, text: final)) }
             return
         }
     }

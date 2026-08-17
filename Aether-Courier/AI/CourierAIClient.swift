@@ -164,7 +164,9 @@ actor CourierAIClient {
         let data = try await send(request, label: "chat")   // paced + retried
         logInfo("AI: HTTP 200, \(data.count) bytes", category: "ai")
         let decoded = try JSONDecoder().decode(ChatResponse.self, from: data)
-        return decoded.choices.first?.message.content ?? ""
+        // Tidy raw local-model output (reasoning blocks, meta-commentary) the way
+        // the Aether hub used to — so local models read as cleanly as the backend.
+        return AICleanup.sanitize(decoded.choices.first?.message.content ?? "")
     }
 
     /// Low-level chat POST for the agent loop. The caller builds the full JSON

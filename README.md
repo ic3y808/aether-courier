@@ -25,6 +25,11 @@ Most "AI email" apps ship your mail to someone else's servers. Aether Courier is
 
 > Think Apple‑Mail‑native polish, a Copilot that can *take action*, and everything private by default.
 
+> ### 💡 A note on the name — and where the AI runs
+> **Aether Courier** is the mail client from a larger personal project called **Aether** (a self‑hosted AI hub). For the public release, the Copilot runs **entirely on a local LLM** — [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai) on your own Mac — or any OpenAI‑compatible endpoint you point it at.
+>
+> You'll see an **"Aether hub (network)"** option in Settings: that's the author's private backend and **isn't available to other users yet**. So for now, **the public app is local‑LLM only** — no account, no sign‑up, no server of ours ever sees your mail. That's the intended way to run it.
+
 ## ✨ Features
 
 | | |
@@ -78,9 +83,10 @@ cd EmailKit && ./test.sh    # IMAP/SMTP/MIME/OAuth unit tests (scripted, no netw
 1. **Add an account** — click **Add Account** and pick your provider.
    - **Gmail / Outlook** use OAuth. You supply your own OAuth **client ID** in **Settings → Providers** (a Google Cloud "iOS/Desktop" client, or an Azure Entra application ID). This keeps *you* in control of your own app registration — no shared keys.
    - **iCloud / Proton** use an **app‑specific password** (Proton via the local [Proton Mail Bridge](https://proton.me/mail/bridge)).
-2. **Turn on the AI** — install Ollama, `ollama pull llama3.1:8b`, then open **Settings → Model** and pick your model. (Any OpenAI‑compatible server works; flip to a remote host in Settings if you don't want local.)
-3. **Ask the Copilot** — try *"summarise my unread and flag anything important"*, *"sort my inboxes into folders"*, or *"is this email a phishing attempt?"*. It runs as an agent and reports what it did.
-4. **Pick a notification sound** — **Settings → Sync → Notifications**.
+2. **Turn on the AI** — install Ollama, `ollama pull llama3.1:8b`, then open **Settings → Model** and pick your model. This is all you need. (Any OpenAI‑compatible server works too — point Settings at your own remote host if you'd rather not run it locally. The built‑in "Aether hub" option is a private backend and isn't available to other users yet.)
+3. **Dial the AI's autonomy** — in **Settings → AI / Backend → Copilot**, choose **Cautious**, **Balanced**, or **Aggressive**. On Aggressive, ask the Copilot to "organize & triage everything" and it'll sort mail into folders, archive low‑value updates, star what's important, and clear spam on its own.
+4. **Ask the Copilot** — try *"summarise my unread and flag anything important"*, *"sort my inboxes into folders"*, or *"is this email a phishing attempt?"*. It runs as an agent and reports what it did.
+5. **Pick a notification sound** — **Settings → Sync → Notifications**.
 
 ## 🔐 Privacy & security
 
